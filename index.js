@@ -6,7 +6,7 @@ const sequelize = require("./config/db");
 const { User, Event } = require('./models');
 const eventRouter = require('./routes/eventRoutes');
 const userRouter = require('./routes/userRoutes');
-const customLogger = require("./middleware/loggingMiddleware");
+const customLogger = require("./middleware/loggingMiddleware.js");
 
 dotenv.config();
 
