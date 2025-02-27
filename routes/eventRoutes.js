@@ -5,6 +5,81 @@ const fs = require('fs');
 const router = new Router();
 const { Event } = require('../models');
 
+
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Event:
+ *       type: object
+ *       required:
+ *         - title
+ *         - date
+ *         - createdBy
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: ID мероприятия
+ *         title:
+ *           type: string
+ *           description: Название мероприятия
+ *         description:
+ *           type: string
+ *           description: Описание мероприятия
+ *         date:
+ *           type: string
+ *           format: date-time
+ *           description: Дата проведения
+ *         createdBy:
+ *           type: integer
+ *           description: ID создателя
+ */
+
+/**
+ * @swagger
+ * /api/events:
+ *   get:
+ *     summary: Получить список всех мероприятий
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Номер страницы
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Количество записей на странице
+ *     responses:
+ *       200:
+ *         description: Список мероприятий
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 events:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Event'
+ *   post:
+ *     summary: Создать новое мероприятие
+ *     security:
+ *       - ApiKeyAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Event'
+ *     responses:
+ *       201:
+ *         description: Мероприятие создано
+ */
+
+
 // Создаем папку uploads, если ее нет
 const uploadDir = path.join(__dirname, '..', 'uploads');
 if (!fs.existsSync(uploadDir)) {
