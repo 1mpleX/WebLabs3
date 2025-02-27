@@ -7,6 +7,8 @@ const { User, Event } = require('./models');
 const eventRouter = require('./routes/eventRoutes');
 const userRouter = require('./routes/userRoutes');
 const customLogger = require("./middleware/loggingMiddleware.js");
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpecs = require('./config/swagger');
 
 dotenv.config();
 
@@ -18,7 +20,8 @@ app.use(express.json());
 
 // Добавляем morgan с кастомным форматом
 app.use(morgan('[:method] :url - :status - :response-time ms'));
-
+// Add before your routes
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 // Добавляем наш кастомный logger
 app.use(customLogger);
 
