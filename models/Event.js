@@ -29,10 +29,14 @@ const Event = sequelize.define('Event', {
       model: 'users',
       key: 'id'
     }
+  },
+  image_url: {
+    type: DataTypes.STRING, // Поле для хранения ссылки на изображение
+    allowNull: true
   }
 }, {
   tableName: 'events',
   timestamps: true
 });
 
-module.exports = Event; 
+module.exports = Event;

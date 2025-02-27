@@ -1,35 +1,56 @@
 const Router = require('express');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 const router = new Router();
 const { Event } = require('../models');
 
-// Получение списка всех мероприятий с пагинацией
-router.get('/', async (req, res) => {
-    try {
-        const { count, rows: events } = await Event.findAndCountAll({
-        });
+// Создаем папку uploads, если ее нет
+const uploadDir = path.join(__dirname, '..', 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+}
 
-        res.json({
-            events
-        });
-    } catch (error) {
-        res.status(500).json({ message: "Ошибка при получении мероприятий", error: error.message });
+// Настройка хранения файлов
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+        cb(null, `${Date.now()}-${file.originalname}`);
     }
 });
 
-// Получение одного мероприятия по ID
-router.get('/:id', async (req, res) => {
+// Ограничения для файлов
+const upload = multer({
+    storage,
+    limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['image/jpeg', 'image/png'];
+        if (!allowedTypes.includes(file.mimetype)) {
+            return cb(new Error('Разрешены только файлы .jpg и .png'), false);
+        }
+        cb(null, true);
+    }
+});
+
+// Загрузка изображения для мероприятия
+router.post('/:id/image', upload.single('image'), async (req, res) => {
     try {
         const event = await Event.findByPk(req.params.id);
         if (!event) {
-            return res.status(404).json({ message: "Мероприятие не найдено" });
+            return res.status(404).json({ message: 'Мероприятие не найдено' });
         }
-        res.json(event);
+
+        event.image_url = `/uploads/${req.file.filename}`;
+        await event.save();
+
+        res.json({ message: 'Изображение загружено', imageUrl: event.image_url });
     } catch (error) {
-        res.status(500).json({ message: "Ошибка при получении мероприятия", error: error.message });
+        res.status(500).json({ message: 'Ошибка при загрузке изображения', error: error.message });
     }
 });
 
-// Создание мероприятия (защищено API-ключом)
 router.post('/', async (req, res) => {
     try {
         const { title, description, date, createdBy } = req.body;
@@ -86,6 +107,31 @@ router.delete('/:id', async (req, res) => {
         res.json({ message: "Мероприятие успешно удалено" });
     } catch (error) {
         res.status(500).json({ message: "Ошибка при удалении мероприятия", error: error.message });
+    }
+});
+
+// Получение одного мероприятия по ID (с изображением)
+router.get('/:id', async (req, res) => {
+    try {
+        const event = await Event.findByPk(req.params.id);
+        if (!event) {
+            return res.status(404).json({ message: 'Мероприятие не найдено' });
+        }
+        res.json(event);
+    } catch (error) {
+        res.status(500).json({ message: 'Ошибка при получении мероприятия', error: error.message });
+    }
+});
+
+router.get('/', async (req, res) => {
+    try {
+        const events = await Event.findAll({
+            order: [['date', 'ASC']] // Сортировка по дате
+        });
+
+        res.json(events);
+    } catch (error) {
+        res.status(500).json({ message: "Ошибка при получении мероприятий", error: error.message });
     }
 });
 
