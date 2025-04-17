@@ -40,30 +40,25 @@ const { Event } = require('../models');
  * @swagger
  * /api/events:
  *   get:
- *     summary: Получить список всех мероприятий
- *     parameters:
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *         description: Номер страницы
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *         description: Количество записей на странице
+ *     summary: Получение списка всех событий
+ *     tags: [Events]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Список мероприятий
+ *         description: Список событий
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 events:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Event'
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Event'
+ *       401:
+ *         description: Не авторизован
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *   post:
  *     summary: Создать новое мероприятие
  *     security:
