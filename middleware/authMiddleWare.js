@@ -1,3 +1,6 @@
+const passport = require('passport');
+const { User, RefreshToken } = require('../models');
+
 const validateApiKey = (req, res, next) => {
     const apiKey = req.headers['x-api-key'];
     
@@ -12,4 +15,22 @@ const validateApiKey = (req, res, next) => {
     next();
 };
 
-module.exports = validateApiKey; 
+const authenticateToken = (req, res, next) => {
+    passport.authenticate('jwt', { session: false }, (err, user) => {
+        if (err) {
+            return res.status(500).json({ message: 'Internal server error' });
+        }
+        
+        if (!user) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+
+        req.user = user;
+        next();
+    })(req, res, next);
+};
+
+module.exports = {
+    validateApiKey,
+    authenticateToken
+}; 

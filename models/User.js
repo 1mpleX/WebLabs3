@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
-const User = require('./User');
 const Event = require('./Event');
+const bcrypt = require('bcryptjs');
 
 const UserModel = sequelize.define('User', {
   id: {
@@ -21,12 +21,16 @@ const UserModel = sequelize.define('User', {
       isEmail: true
     }
   },
+  password: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },  
   createdAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW
   }
 }, {
-  tableName: 'users',
+  tableName: 'Users',
   timestamps: true
 });
 
@@ -41,4 +45,11 @@ Event.belongsTo(UserModel, {
   as: 'creator'
 });
 
-module.exports = UserModel; 
+module.exports = UserModel;
+
+UserModel.beforeCreate(async (user, options) => {
+  if (user.password) {
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(user.password, salt);
+  }
+});

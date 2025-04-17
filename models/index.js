@@ -1,18 +1,25 @@
 const sequelize = require('../config/db');
 const User = require('./User');
 const Event = require('./Event');
+const RefreshToken = require('./RefreshToken');
 
-// Установка связи один-ко-многим между User и Event
+// User associations
 User.hasMany(Event, {
   foreignKey: 'createdBy'
 });
 
-Event.belongsTo(User, {
-  foreignKey: 'createdBy'
+User.hasMany(RefreshToken, {
+  foreignKey: 'userId',
+  onDelete: 'CASCADE'
+});
+
+RefreshToken.belongsTo(User, {
+  foreignKey: 'userId'
 });
 
 module.exports = {
   sequelize,
   User,
-  Event
+  Event,
+  RefreshToken
 }; 
