@@ -1,4 +1,4 @@
-const swaggerJsdoc = require('swagger-jsdoc');
+import swaggerJsdoc from 'swagger-jsdoc';
 
 const options = {
   definition: {
@@ -20,7 +20,7 @@ const options = {
           type: 'http',
           scheme: 'bearer',
           bearerFormat: 'JWT',
-        }
+        },
       },
       schemas: {
         User: {
@@ -28,87 +28,90 @@ const options = {
           properties: {
             id: {
               type: 'integer',
-              description: 'ID пользователя'
+              description: 'ID пользователя',
             },
             name: {
               type: 'string',
-              description: 'Имя пользователя'
+              description: 'Имя пользователя',
             },
             email: {
               type: 'string',
               format: 'email',
-              description: 'Email пользователя'
+              description: 'Email пользователя',
             },
             password: {
               type: 'string',
               format: 'password',
-              description: 'Пароль пользователя'
-            }
-          }
+              description: 'Пароль пользователя',
+            },
+          },
         },
         Event: {
           type: 'object',
           properties: {
             id: {
               type: 'integer',
-              description: 'ID события'
+              description: 'ID события',
             },
             title: {
               type: 'string',
-              description: 'Название события'
+              description: 'Название события',
             },
             description: {
               type: 'string',
-              description: 'Описание события'
+              description: 'Описание события',
             },
             date: {
               type: 'string',
               format: 'date-time',
-              description: 'Дата и время события'
+              description: 'Дата и время события',
             },
             createdBy: {
               type: 'integer',
-              description: 'ID создателя события'
-            }
-          }
+              description: 'ID создателя события',
+            },
+          },
         },
         Error: {
           type: 'object',
           properties: {
             message: {
               type: 'string',
-              description: 'Сообщение об ошибке'
-            }
-          }
+              description: 'Сообщение об ошибке',
+            },
+          },
         },
         LoginResponse: {
           type: 'object',
           properties: {
             message: {
               type: 'string',
-              description: 'Сообщение о успешной авторизации'
+              description: 'Сообщение о успешной авторизации',
             },
             accessToken: {
               type: 'string',
-              description: 'JWT токен доступа'
+              description: 'JWT токен доступа',
             },
             refreshToken: {
               type: 'string',
-              description: 'Токен для обновления JWT'
+              description: 'Токен для обновления JWT',
             },
             user: {
-              $ref: '#/components/schemas/User'
-            }
-          }
-        }
-      }
+              $ref: '#/components/schemas/User',
+            },
+          },
+        },
+      },
     },
-    security: [{
-      bearerAuth: []
-    }]
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
   },
   apis: ['./routes/*.js'], // путь к файлам с маршрутами
 };
 
-const specs = swaggerJsdoc(options);
-module.exports = specs;
+const swaggerSpecs = swaggerJsdoc(options);
+
+export default swaggerSpecs;
