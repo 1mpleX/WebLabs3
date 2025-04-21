@@ -13,6 +13,7 @@ import customLogger from './middleware/loggingMiddleware';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpecs from './config/swagger';
 import authRouter from './routes/auth';
+import path from 'path';
 
 dotenv.config();
 
@@ -46,6 +47,8 @@ app.use(
   passport.authenticate('jwt', { session: false }),
   userRouter,
 );
+
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 app.get('/', (req, res) => {
   res.json({

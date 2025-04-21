@@ -14,11 +14,24 @@ const EventCard = ({ event }: EventCardProps) => {
     });
   };
 
+  // Базовый URL для изображений
+  const baseImageUrl = 'http://localhost:5005'; // URL вашего бэкенда
+
   return (
     <div className={styles.card}>
-      {event.image_url && (
-        <img src={event.image_url} alt={event.title} className={styles.image} />
-      )}
+      <div className={styles.imageContainer}>
+        {event.image_url ? (
+          <img 
+            src={`${baseImageUrl}${event.image_url}`} 
+            alt={event.title} 
+            className={styles.image}
+          />
+        ) : (
+          <div className={styles.noImage}>
+            <span>Нет изображения</span>
+          </div>
+        )}
+      </div>
       <div className={styles.content}>
         <h3 className={styles.title}>{event.title}</h3>
         <p className={styles.description}>{event.description}</p>

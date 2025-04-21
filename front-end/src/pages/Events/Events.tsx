@@ -10,21 +10,45 @@ const Events = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [layout, setLayout] = useState<'grid' | 'list'>('grid');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadingEventId, setUploadingEventId] = useState<number | null>(null);
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await axiosInstance.get('/events');
-        setEvents(response.data);
-      } catch (err) {
-        setError('Не удалось загрузить мероприятия');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchEvents();
   }, []);
+
+  const fetchEvents = async () => {
+    try {
+      const response = await axiosInstance.get('/events');
+      setEvents(response.data);
+    } catch (err) {
+      setError('Не удалось загрузить мероприятия');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFileUpload = async (eventId: number, file: File) => {
+    try {
+      setUploadingEventId(eventId);
+      const formData = new FormData();
+      formData.append('image', file);
+
+      await axiosInstance.post(`/events/${eventId}/image`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      // Обновляем список мероприятий после загрузки
+      await fetchEvents();
+    } catch (err) {
+      setError('Ошибка при загрузке изображения');
+    } finally {
+      setUploadingEventId(null);
+      setSelectedFile(null);
+    }
+  };
 
   if (loading) {
     return <div className={styles.loading}>Загрузка...</div>;
@@ -55,7 +79,25 @@ const Events = () => {
       </div>
       <div className={`${styles.events} ${styles[layout]}`}>
         {events.map((event) => (
-          <EventCard key={event.id} event={event} />
+          <div key={event.id} className={styles.eventWrapper}>
+            <EventCard event={event} />
+            <div className={styles.uploadContainer}>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    handleFileUpload(event.id, file);
+                  }
+                }}
+                className={styles.fileInput}
+              />
+              {uploadingEventId === event.id && (
+                <div className={styles.uploading}>Загрузка...</div>
+              )}
+            </div>
+          </div>
         ))}
       </div>
     </div>
