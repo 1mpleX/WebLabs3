@@ -216,9 +216,15 @@ const upload = multer({
 // Обработчики маршрутов
 const uploadImage = async (req: any, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const event = await Event.findByPk(req.params.id);
+    const event = await Event.findOne({
+      where: {
+        id: req.params.id,
+        createdBy: req.user.id
+      }
+    });
+
     if (!event) {
-      res.status(404).json({ message: 'Мероприятие не найдено' });
+      res.status(404).json({ message: 'Мероприятие не найдено или у вас нет прав доступа' });
       return;
     }
 
@@ -236,7 +242,11 @@ const uploadImage = async (req: any, res: Response, next: NextFunction): Promise
 
 const createEvent = async (req: any, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const event = await Event.create(req.body);
+    const eventData = {
+      ...req.body,
+      createdBy: req.user.id
+    };
+    const event = await Event.create(eventData);
     res.status(201).json(event);
   } catch (error) {
     next(error);
@@ -245,11 +255,18 @@ const createEvent = async (req: any, res: Response, next: NextFunction): Promise
 
 const updateEvent = async (req: any, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const event = await Event.findByPk(req.params.id);
+    const event = await Event.findOne({
+      where: {
+        id: req.params.id,
+        createdBy: req.user.id
+      }
+    });
+    
     if (!event) {
-      res.status(404).json({ message: 'Мероприятие не найдено' });
+      res.status(404).json({ message: 'Мероприятие не найдено или у вас нет прав доступа' });
       return;
     }
+    
     await event.update(req.body);
     res.json(event);
   } catch (error) {
@@ -259,11 +276,18 @@ const updateEvent = async (req: any, res: Response, next: NextFunction): Promise
 
 const deleteEvent = async (req: any, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const event = await Event.findByPk(req.params.id);
+    const event = await Event.findOne({
+      where: {
+        id: req.params.id,
+        createdBy: req.user.id
+      }
+    });
+    
     if (!event) {
-      res.status(404).json({ message: 'Мероприятие не найдено' });
+      res.status(404).json({ message: 'Мероприятие не найдено или у вас нет прав доступа' });
       return;
     }
+    
     await event.destroy();
     res.json({ message: 'Мероприятие удалено' });
   } catch (error) {
@@ -286,7 +310,12 @@ const getEvent = async (req: any, res: Response, next: NextFunction): Promise<vo
 
 const getAllEvents = async (req: any, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const events = await Event.findAll();
+    const events = await Event.findAll({
+      where: {
+        createdBy: req.user.id
+      },
+      order: [['date', 'ASC']]
+    });
     res.json(events);
   } catch (error) {
     next(error);
