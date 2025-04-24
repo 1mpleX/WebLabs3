@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { authenticateToken } from '../middleware/authMiddleWare';
 import { User, RefreshToken } from '../models';
+import { Response } from 'express';
 
 const router = express.Router();
 
@@ -399,6 +400,45 @@ router.post('/logout', authenticateToken as any, async (req: any, res): Promise<
     res.json({ message: 'Logged out successfully' });
   } catch {
     res.status(500).json({ message: 'Error during logout' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/auth/me:
+ *   get:
+ *     summary: Получить данные текущего пользователя
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Данные пользователя
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Не авторизован
+ */
+router.get('/me', authenticateToken, async (req: any, res: Response): Promise<void> => {
+  try {
+    const user = await User.findByPk(req.user.id, {
+      attributes: { exclude: ['password'] }
+    });
+
+    if (!user) {
+      res.status(404).json({ message: 'Пользователь не найден' });
+      return;
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error('Error getting current user:', error);
+    res.status(500).json({ 
+      message: 'Ошибка при получении данных пользователя',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 });
 
