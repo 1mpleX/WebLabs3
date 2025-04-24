@@ -1,5 +1,6 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { Event } from '../../types';
+import * as eventApi from '../../api/events';
 
 interface EventState {
   events: Event[];
@@ -12,6 +13,52 @@ const initialState: EventState = {
   loading: false,
   error: null,
 };
+
+// Async actions
+export const fetchEvents = createAsyncThunk(
+  'events/fetchEvents',
+  async (_, { rejectWithValue }) => {
+    try {
+      return await eventApi.getEvents();
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch events');
+    }
+  }
+);
+
+export const createEvent = createAsyncThunk(
+  'events/createEvent',
+  async (eventData: Partial<Event>, { rejectWithValue }) => {
+    try {
+      return await eventApi.createEvent(eventData);
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to create event');
+    }
+  }
+);
+
+export const updateEventAsync = createAsyncThunk(
+  'events/updateEvent',
+  async ({ id, data }: { id: number; data: Partial<Event> }, { rejectWithValue }) => {
+    try {
+      return await eventApi.updateEvent(id, data);
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to update event');
+    }
+  }
+);
+
+export const deleteEventAsync = createAsyncThunk(
+  'events/deleteEvent',
+  async (id: number, { rejectWithValue }) => {
+    try {
+      await eventApi.deleteEvent(id);
+      return id;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to delete event');
+    }
+  }
+);
 
 const eventSlice = createSlice({
   name: 'events',
@@ -39,6 +86,46 @@ const eventSlice = createSlice({
     setError: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      // Fetch events
+      .addCase(fetchEvents.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchEvents.fulfilled, (state, action) => {
+        state.events = action.payload;
+        state.loading = false;
+      })
+      .addCase(fetchEvents.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Create event
+      .addCase(createEvent.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createEvent.fulfilled, (state, action) => {
+        state.events.push(action.payload);
+        state.loading = false;
+      })
+      .addCase(createEvent.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Update event
+      .addCase(updateEventAsync.fulfilled, (state, action) => {
+        const index = state.events.findIndex(event => event.id === action.payload.id);
+        if (index !== -1) {
+          state.events[index] = action.payload;
+        }
+      })
+      // Delete event
+      .addCase(deleteEventAsync.fulfilled, (state, action) => {
+        state.events = state.events.filter(event => event.id !== action.payload);
+      });
   },
 });
 

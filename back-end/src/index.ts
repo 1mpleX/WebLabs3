@@ -80,13 +80,6 @@ const start = async () => {
       console.error('Ошибка при создании тестового пользователя:', userError);
     }
 
-    // Синхронизация с базой данных
-    await sequelize.sync({ force: true }).then(() => {
-      console.log('Database synchronized');
-    }).catch((error) => {
-      console.error('Error synchronizing database:', error);
-    });
-
     // Запуск сервера
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);

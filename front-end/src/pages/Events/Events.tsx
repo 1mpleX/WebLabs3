@@ -1,32 +1,25 @@
 import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch } from '../../store';
+import { fetchEvents } from '../../store/slices/eventSlice';
 import { Event } from '../../types';
 import EventCard from '../../components/EventCard/EventCard';
+import { EventForm } from '../../components/EventForm/EventForm';
 import ErrorMessage from '../../components/ErrorMessage/ErrorMessage';
 import axiosInstance from '../../api/axios';
 import styles from './Events.module.scss';
 
 const Events = () => {
-  const [events, setEvents] = useState<Event[]>([]);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch<AppDispatch>();
+  const { events, loading, error } = useSelector((state: RootState) => state.events);
   const [layout, setLayout] = useState<'grid' | 'list'>('grid');
+  const [isCreating, setIsCreating] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadingEventId, setUploadingEventId] = useState<number | null>(null);
 
   useEffect(() => {
-    fetchEvents();
-  }, []);
-
-  const fetchEvents = async () => {
-    try {
-      const response = await axiosInstance.get('/events');
-      setEvents(response.data);
-    } catch (err) {
-      setError('Не удалось загрузить мероприятия');
-    } finally {
-      setLoading(false);
-    }
-  };
+    dispatch(fetchEvents());
+  }, [dispatch]);
 
   const handleFileUpload = async (eventId: number, file: File) => {
     try {
@@ -41,9 +34,9 @@ const Events = () => {
       });
 
       // Обновляем список мероприятий после загрузки
-      await fetchEvents();
+      dispatch(fetchEvents());
     } catch (err) {
-      setError('Ошибка при загрузке изображения');
+      console.error('Ошибка при загрузке изображения', err);
     } finally {
       setUploadingEventId(null);
       setSelectedFile(null);
@@ -62,21 +55,38 @@ const Events = () => {
     <div className={styles.container}>
       <div className={styles.header}>
         <h2 className={styles.title}>Мероприятия</h2>
-        <div className={styles.layoutButtons}>
-          <button
-            onClick={() => setLayout('grid')}
-            className={`${styles.layoutButton} ${layout === 'grid' ? styles.active : ''}`}
+        <div className={styles.controls}>
+          <button 
+            className={styles.createButton}
+            onClick={() => setIsCreating(true)}
           >
-            Сетка
+            Создать мероприятие
           </button>
-          <button
-            onClick={() => setLayout('list')}
-            className={`${styles.layoutButton} ${layout === 'list' ? styles.active : ''}`}
-          >
-            Список
-          </button>
+          <div className={styles.layoutButtons}>
+            <button
+              onClick={() => setLayout('grid')}
+              className={`${styles.layoutButton} ${layout === 'grid' ? styles.active : ''}`}
+            >
+              Сетка
+            </button>
+            <button
+              onClick={() => setLayout('list')}
+              className={`${styles.layoutButton} ${layout === 'list' ? styles.active : ''}`}
+            >
+              Список
+            </button>
+          </div>
         </div>
       </div>
+
+      {isCreating && (
+        <div className={styles.modal}>
+          <div className={styles.modalContent}>
+            <EventForm onClose={() => setIsCreating(false)} />
+          </div>
+        </div>
+      )}
+
       <div className={`${styles.events} ${styles[layout]}`}>
         {events.map((event) => (
           <div key={event.id} className={styles.eventWrapper}>
