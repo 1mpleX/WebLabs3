@@ -3,7 +3,7 @@ import express from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import { Event } from '../models';
+import { Event, User } from '../models';
 
 // Расширяем тип Request для работы с файлами
 interface MulterRequest extends Request {
@@ -243,6 +243,7 @@ const uploadImage = async (req: any, res: Response, next: NextFunction): Promise
 const createEvent = async (req: any, res: Response, next: NextFunction): Promise<void> => {
   try {
     console.log('=== Начало создания мероприятия ===');
+    console.log('Весь объект req.user:', req.user);
     console.log('User ID из токена:', req.user.id);
     console.log('Тело запроса:', req.body);
 
@@ -267,11 +268,13 @@ const createEvent = async (req: any, res: Response, next: NextFunction): Promise
     };
 
     console.log('Данные для создания мероприятия:', eventData);
+    console.log('ID создателя (createdBy):', eventData.createdBy);
     console.log('Тип поля date:', typeof eventData.date);
     console.log('Значение date:', eventData.date);
 
     const event = await Event.create(eventData);
     console.log('Мероприятие успешно создано:', event.toJSON());
+    console.log('ID создателя в созданном мероприятии:', event.get('createdBy'));
 
     res.status(201).json(event);
   } catch (error) {
@@ -336,9 +339,15 @@ const deleteEvent = async (req: any, res: Response, next: NextFunction): Promise
 
 const getEvent = async (req: any, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const event = await Event.findByPk(req.params.id);
+    const event = await Event.findOne({
+      where: {
+        id: req.params.id,
+        createdBy: req.user.id
+      }
+    });
+    
     if (!event) {
-      res.status(404).json({ message: 'Мероприятие не найдено' });
+      res.status(404).json({ message: 'Мероприятие не найдено или у вас нет прав доступа' });
       return;
     }
     res.json(event);
@@ -349,14 +358,30 @@ const getEvent = async (req: any, res: Response, next: NextFunction): Promise<vo
 
 const getAllEvents = async (req: any, res: Response, next: NextFunction): Promise<void> => {
   try {
+    console.log('=== Получение списка мероприятий ===');
+    console.log('ID пользователя:', req.user.id);
+
     const events = await Event.findAll({
       where: {
         createdBy: req.user.id
       },
+      include: [{
+        model: User,
+        attributes: ['id', 'firstName', 'lastName', 'email']
+      }],
       order: [['date', 'ASC']]
     });
+
+    console.log('Найдено мероприятий:', events.length);
+    console.log('Мероприятия:', events.map(event => ({
+      id: event.id,
+      title: event.title,
+      createdBy: event.createdBy
+    })));
+
     res.json(events);
   } catch (error) {
+    console.error('Ошибка при получении мероприятий:', error);
     next(error);
   }
 };

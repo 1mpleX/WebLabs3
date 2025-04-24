@@ -16,6 +16,7 @@ interface EventFormData {
 export const EventList: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { events } = useSelector((state: RootState) => state.events);
+  const { currentUser } = useSelector((state: RootState) => state.user);
   const [isAddingEvent, setIsAddingEvent] = useState(false);
   const [editingEventId, setEditingEventId] = useState<number | null>(null);
   const [formData, setFormData] = useState<EventFormData>({
@@ -27,8 +28,11 @@ export const EventList: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   useEffect(() => {
-    dispatch(fetchEvents());
-  }, [dispatch]);
+    if (currentUser) {
+      console.log('Fetching events for user:', currentUser.id);
+      dispatch(fetchEvents());
+    }
+  }, [dispatch, currentUser]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store';
 import { clearUser } from '../../store/slices/userSlice';
+import { clearEvents } from '../../store/slices/eventSlice';
 import styles from './Header.module.scss';
 
 const Header: React.FC = () => {
@@ -12,6 +13,9 @@ const Header: React.FC = () => {
 
   const handleLogout = () => {
     dispatch(clearUser());
+    dispatch(clearEvents());
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
     navigate('/login');
   };
 

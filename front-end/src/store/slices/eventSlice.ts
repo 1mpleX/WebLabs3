@@ -90,6 +90,11 @@ const eventSlice = createSlice({
     setError: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
     },
+    clearEvents: (state) => {
+      state.events = [];
+      state.error = null;
+      state.loading = false;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -139,6 +144,7 @@ export const {
   updateEvent, 
   deleteEvent, 
   setLoading, 
-  setError 
+  setError, 
+  clearEvents 
 } = eventSlice.actions;
 export default eventSlice.reducer; 
