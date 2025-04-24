@@ -24,7 +24,7 @@ export const Login: React.FC = () => {
     try {
       const response = await axiosInstance.post('/auth/login', formData);
       dispatch(setUser(response.data.user));
-      localStorage.setItem('token', response.data.accessToken);
+      localStorage.setItem('accessToken', response.data.accessToken);
       navigate('/profile');
     } catch (err) {
       setError('Неверный email или пароль');

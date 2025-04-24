@@ -36,6 +36,7 @@ const Event = sequelize.define<EventInstance>('Event', {
   createdBy: {
     type: DataTypes.INTEGER,
     allowNull: false,
+    field: 'createdBy',
     references: {
       model: 'users',
       key: 'id',
@@ -48,6 +49,7 @@ const Event = sequelize.define<EventInstance>('Event', {
 }, {
   tableName: 'events',
   timestamps: true,
+  underscored: false
 });
 
 export { Event };

@@ -34,6 +34,10 @@ export const authenticateToken = async (
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
+  console.log('=== Auth Middleware ===');
+  console.log('Auth Header:', authHeader);
+  console.log('Token:', token);
+
   if (!token) {
     res.status(401).json({ message: 'Токен не предоставлен' });
     return;
@@ -45,7 +49,10 @@ export const authenticateToken = async (
       process.env.JWT_SECRET || 'your_jwt_secret'
     ) as jwt.JwtPayload;
     
+    console.log('Decoded token:', decoded);
+    
     const user = await User.findByPk(decoded.id);
+    console.log('Found user:', user ? user.toJSON() : null);
     
     if (!user) {
       res.status(403).json({ message: 'Пользователь не найден' });
@@ -53,8 +60,10 @@ export const authenticateToken = async (
     }
 
     req.user = user as any;
+    console.log('User set in request:', req.user);
     next();
   } catch (error) {
+    console.error('Token verification error:', error);
     res.status(403).json({ message: 'Недействительный токен' });
   }
 };

@@ -4,11 +4,23 @@ import { User } from './User';
 import { Event } from './Event';
 import { RefreshToken } from './RefreshToken';
 
-// User associations
+// User-Event associations
 User.hasMany(Event, {
-  foreignKey: 'createdBy',
+  foreignKey: {
+    name: 'createdBy',
+    allowNull: false
+  },
+  onDelete: 'CASCADE'
 });
 
+Event.belongsTo(User, {
+  foreignKey: {
+    name: 'createdBy',
+    allowNull: false
+  }
+});
+
+// User-RefreshToken associations
 User.hasMany(RefreshToken, {
   foreignKey: 'userId',
   onDelete: 'CASCADE',

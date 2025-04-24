@@ -27,11 +27,19 @@ export const Register: React.FC = () => {
     e.preventDefault();
     try {
       const response = await axiosInstance.post('/auth/register', formData);
+      
+      // Сохраняем токены
+      localStorage.setItem('accessToken', response.data.accessToken);
+      localStorage.setItem('refreshToken', response.data.refreshToken);
+      
+      // Устанавливаем пользователя в Redux
       dispatch(setUser(response.data.user));
-      localStorage.setItem('token', response.data.accessToken);
-      navigate('/profile');
-    } catch (err) {
-      setError('Ошибка при регистрации. Возможно, email уже используется.');
+      
+      // После успешной регистрации перенаправляем на страницу мероприятий
+      navigate('/events');
+    } catch (err: any) {
+      console.error('Registration error:', err);
+      setError(err.response?.data?.message || 'Ошибка при регистрации. Возможно, email уже используется.');
     }
   };
 
