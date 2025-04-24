@@ -9,7 +9,7 @@ const Home = () => {
     <div className={styles.container}>
       <h1 className={styles.title}>EventManager</h1>
       <div className={styles.content}>
-        <img src="/logo.png" alt="Logo" className={styles.logo} />
+        <img src="https://i.pinimg.com/736x/90/44/a6/9044a634e09b2a633ff73efad0fdf470.jpg" alt="Logo" className={styles.logo} />
         <p className={styles.description}>
           Добро пожаловать в EventManager - удобное приложение для управления мероприятиями.
           Создавайте, управляйте и отслеживайте события с легкостью!
