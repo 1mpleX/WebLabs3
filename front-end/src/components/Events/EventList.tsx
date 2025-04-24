@@ -4,6 +4,7 @@ import { RootState, AppDispatch } from '../../store';
 import { updateEventAsync, deleteEventAsync, fetchEvents, createEvent } from '../../store/slices/eventSlice';
 import { Event } from '../../types';
 import styles from './EventList.module.scss';
+import axiosInstance from '../../api/axios';
 
 interface EventFormData {
   title: string;
@@ -23,6 +24,7 @@ export const EventList: React.FC = () => {
     date: '',
     image_url: '',
   });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   useEffect(() => {
     dispatch(fetchEvents());
@@ -33,16 +35,46 @@ export const EventList: React.FC = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingEventId) {
-      dispatch(updateEventAsync({ id: editingEventId, data: formData }));
-      setEditingEventId(null);
-    } else {
-      dispatch(createEvent(formData));
-      setIsAddingEvent(false);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
     }
-    setFormData({ title: '', description: '', date: '', image_url: '' });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      let eventId;
+      if (editingEventId) {
+        const result = await dispatch(updateEventAsync({ id: editingEventId, data: formData })).unwrap();
+        eventId = result.id;
+      } else {
+        const result = await dispatch(createEvent(formData)).unwrap();
+        eventId = result.id;
+      }
+
+      // Если выбран файл, загружаем его
+      if (selectedFile && eventId) {
+        const formData = new FormData();
+        formData.append('image', selectedFile);
+        
+        await axiosInstance.post(`/events/${eventId}/image`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        
+        // Обновляем список событий, чтобы получить обновленные данные
+        dispatch(fetchEvents());
+      }
+
+      setEditingEventId(null);
+      setIsAddingEvent(false);
+      setFormData({ title: '', description: '', date: '', image_url: '' });
+      setSelectedFile(null);
+    } catch (error) {
+      console.error('Error:', error);
+    }
   };
 
   const handleEdit = (event: Event) => {
@@ -59,6 +91,15 @@ export const EventList: React.FC = () => {
     if (window.confirm('Вы уверены, что хотите удалить это мероприятие?')) {
       dispatch(deleteEventAsync(id));
     }
+  };
+
+  // Функция для получения полного URL изображения
+  const getImageUrl = (imageUrl: string) => {
+    // Получаем базовый URL без /api на конце
+    const baseUrl = import.meta.env.VITE_API_URL.replace(/\/api$/, '');
+    // Убираем начальный слеш, если он есть
+    const cleanImageUrl = imageUrl.startsWith('/') ? imageUrl.slice(1) : imageUrl;
+    return `${baseUrl}/${cleanImageUrl}`;
   };
 
   const EventForm = () => (
@@ -93,12 +134,11 @@ export const EventList: React.FC = () => {
         />
       </div>
       <div className={styles.formGroup}>
-        <label>URL изображения:</label>
+        <label>Изображение:</label>
         <input
-          type="url"
-          name="image_url"
-          value={formData.image_url}
-          onChange={handleInputChange}
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
         />
       </div>
       <div className={styles.buttons}>
@@ -111,6 +151,7 @@ export const EventList: React.FC = () => {
             setIsAddingEvent(false);
             setEditingEventId(null);
             setFormData({ title: '', description: '', date: '', image_url: '' });
+            setSelectedFile(null);
           }}
         >
           Отмена
@@ -136,7 +177,15 @@ export const EventList: React.FC = () => {
         {events.map(event => (
           <div key={event.id} className={styles.eventCard}>
             {event.image_url && (
-              <img src={event.image_url} alt={event.title} />
+              <img 
+                src={getImageUrl(event.image_url)}
+                alt={event.title}
+                className={styles.eventImage}
+                onError={(e) => {
+                  console.error('Error loading image:', event.image_url);
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
             )}
             <div className={styles.eventContent}>
               <h3>{event.title}</h3>

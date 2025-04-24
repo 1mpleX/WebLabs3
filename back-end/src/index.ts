@@ -14,11 +14,18 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerSpecs from './config/swagger';
 import authRouter from './routes/auth';
 import path from 'path';
+import fs from 'fs';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5005;
+
+// Создаем папку uploads, если её нет
+const uploadsDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 app.use(cors());
 app.use(express.json());
@@ -28,6 +35,9 @@ app.use(passport.initialize());
 
 // Добавляем morgan с кастомным форматом
 app.use(morgan('[:method] :url - :status - :response-time ms'));
+
+// Настройка статических файлов
+app.use('/uploads', express.static(uploadsDir));
 
 // Swagger документация
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
@@ -47,8 +57,6 @@ app.use(
   passport.authenticate('jwt', { session: false }),
   userRouter,
 );
-
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 app.get('/', (req, res) => {
   res.json({
