@@ -142,6 +142,15 @@ const updateUser = async (req: any, res: Response, next: NextFunction): Promise<
     const { id } = req.params;
     const { firstName, lastName, email, gender, birthDate } = req.body;
 
+    console.log('Updating user:', {
+      id,
+      firstName,
+      lastName,
+      email,
+      gender,
+      birthDate
+    });
+
     const user = await User.findByPk(id);
     if (!user) {
       res.status(404).json({ message: 'Пользователь не найден' });
@@ -150,25 +159,33 @@ const updateUser = async (req: any, res: Response, next: NextFunction): Promise<
 
     // Обновляем только те поля, которые были переданы
     const updateData: any = {};
-    if (firstName) updateData.first_name = firstName;
-    if (lastName) updateData.last_name = lastName;
-    if (email) updateData.email = email;
-    if (gender) updateData.gender = gender;
-    if (birthDate) updateData.birth_date = new Date(birthDate);
+    if (firstName !== undefined) updateData.firstName = firstName;
+    if (lastName !== undefined) updateData.lastName = lastName;
+    if (email !== undefined) updateData.email = email;
+    if (gender !== undefined) updateData.gender = gender;
+    if (birthDate !== undefined) updateData.birthDate = birthDate;
+
+    console.log('Update data:', updateData);
 
     await user.update(updateData);
     
     // Получаем обновленные данные пользователя
     const updatedUser = await User.findByPk(id, {
-      attributes: { exclude: ['password'] } // Исключаем пароль из ответа
+      attributes: { 
+        exclude: ['password'],
+      }
     });
+
+    console.log('Updated user:', updatedUser?.toJSON());
 
     res.json(updatedUser);
   } catch (error) {
+    console.error('Error updating user:', error);
     if (error instanceof Error) {
       res.status(400).json({
         message: 'Ошибка при обновлении пользователя',
         error: error.message,
+        stack: error.stack
       });
     } else {
       res.status(400).json({
