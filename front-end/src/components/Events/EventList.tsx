@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../../store';
-import { addEvent, updateEvent, deleteEvent } from '../../store/slices/eventSlice';
+import { RootState, AppDispatch } from '../../store';
+import { updateEventAsync, deleteEventAsync, fetchEvents, createEvent } from '../../store/slices/eventSlice';
 import { Event } from '../../types';
 import styles from './EventList.module.scss';
 
@@ -13,7 +13,7 @@ interface EventFormData {
 }
 
 export const EventList: React.FC = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { events } = useSelector((state: RootState) => state.events);
   const [isAddingEvent, setIsAddingEvent] = useState(false);
   const [editingEventId, setEditingEventId] = useState<number | null>(null);
@@ -24,6 +24,10 @@ export const EventList: React.FC = () => {
     image_url: '',
   });
 
+  useEffect(() => {
+    dispatch(fetchEvents());
+  }, [dispatch]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -32,10 +36,10 @@ export const EventList: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingEventId) {
-      dispatch(updateEvent({ id: editingEventId, ...formData } as Event));
+      dispatch(updateEventAsync({ id: editingEventId, data: formData }));
       setEditingEventId(null);
     } else {
-      dispatch(addEvent({ id: Date.now(), ...formData } as Event));
+      dispatch(createEvent(formData));
       setIsAddingEvent(false);
     }
     setFormData({ title: '', description: '', date: '', image_url: '' });
@@ -53,7 +57,7 @@ export const EventList: React.FC = () => {
 
   const handleDelete = (id: number) => {
     if (window.confirm('Вы уверены, что хотите удалить это мероприятие?')) {
-      dispatch(deleteEvent(id));
+      dispatch(deleteEventAsync(id));
     }
   };
 

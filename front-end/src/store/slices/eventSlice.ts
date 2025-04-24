@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { Event } from '../../types';
-import * as eventApi from '../../api/events';
+import { eventService } from '../../api/eventService';
 
 interface EventState {
   events: Event[];
@@ -19,7 +19,7 @@ export const fetchEvents = createAsyncThunk(
   'events/fetchEvents',
   async (_, { rejectWithValue }) => {
     try {
-      return await eventApi.getEvents();
+      return await eventService.getAllEvents();
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch events');
     }
@@ -30,8 +30,12 @@ export const createEvent = createAsyncThunk(
   'events/createEvent',
   async (eventData: Partial<Event>, { rejectWithValue }) => {
     try {
-      return await eventApi.createEvent(eventData);
+      console.log('Создание мероприятия в slice:', eventData);
+      const result = await eventService.createEvent(eventData as Omit<Event, 'id'>);
+      console.log('Ответ от сервера:', result);
+      return result;
     } catch (error: any) {
+      console.error('Ошибка при создании мероприятия:', error);
       return rejectWithValue(error.response?.data?.message || 'Failed to create event');
     }
   }
@@ -41,7 +45,7 @@ export const updateEventAsync = createAsyncThunk(
   'events/updateEvent',
   async ({ id, data }: { id: number; data: Partial<Event> }, { rejectWithValue }) => {
     try {
-      return await eventApi.updateEvent(id, data);
+      return await eventService.updateEvent(id, data);
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to update event');
     }
@@ -52,7 +56,7 @@ export const deleteEventAsync = createAsyncThunk(
   'events/deleteEvent',
   async (id: number, { rejectWithValue }) => {
     try {
-      await eventApi.deleteEvent(id);
+      await eventService.deleteEvent(id);
       return id;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to delete event');

@@ -264,7 +264,8 @@ router.post('/login', async (req, res): Promise<any> => {
     refreshToken,
     user: {
       id: user.id,
-      name: user.name,
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
     },
   });

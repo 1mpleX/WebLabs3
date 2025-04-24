@@ -242,14 +242,53 @@ const uploadImage = async (req: any, res: Response, next: NextFunction): Promise
 
 const createEvent = async (req: any, res: Response, next: NextFunction): Promise<void> => {
   try {
+    console.log('=== Начало создания мероприятия ===');
+    console.log('User ID из токена:', req.user.id);
+    console.log('Тело запроса:', req.body);
+
+    // Проверка обязательных полей
+    const { title, date } = req.body;
+    if (!title || !date) {
+      console.error('Отсутствуют обязательные поля:', { title: !title, date: !date });
+      res.status(400).json({
+        message: 'Название и дата мероприятия обязательны',
+        missingFields: {
+          title: !title,
+          date: !date
+        }
+      });
+      return;
+    }
+
+    // Создание мероприятия
     const eventData = {
       ...req.body,
       createdBy: req.user.id
     };
+
+    console.log('Данные для создания мероприятия:', eventData);
+    console.log('Тип поля date:', typeof eventData.date);
+    console.log('Значение date:', eventData.date);
+
     const event = await Event.create(eventData);
+    console.log('Мероприятие успешно создано:', event.toJSON());
+
     res.status(201).json(event);
   } catch (error) {
-    next(error);
+    console.error('=== Ошибка при создании мероприятия ===');
+    console.error('Детали ошибки:', error);
+    if (error instanceof Error) {
+      console.error('Stack trace:', error.stack);
+      res.status(500).json({
+        message: 'Ошибка при создании мероприятия',
+        error: error.message,
+        stack: error.stack
+      });
+    } else {
+      res.status(500).json({
+        message: 'Неизвестная ошибка при создании мероприятия'
+      });
+    }
   }
 };
 

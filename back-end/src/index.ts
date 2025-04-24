@@ -69,10 +69,10 @@ const start = async () => {
     try {
       const testUser = await User.create({
         firstName: 'Test',
-        lastName: 'User',
+        lastName: 'Userrr',
         email: 'test@example.com',
         password: 'password123',
-        gender: 'male',
+        gender: 'female',
         birthDate: new Date('1990-01-01')
       });
       console.log('Тестовый пользователь создан:', (testUser as any).email);
