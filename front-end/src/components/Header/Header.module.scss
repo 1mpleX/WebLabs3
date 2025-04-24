@@ -1,0 +1,73 @@
+.header {
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .logo {
+    a {
+      text-decoration: none;
+      color: #007bff;
+      font-size: 1.5rem;
+      font-weight: bold;
+      
+      &:hover {
+        color: #0056b3;
+      }
+    }
+  }
+  
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+  }
+  
+  .navLinks {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 2rem;
+
+    li {
+      a {
+        text-decoration: none;
+        color: #333;
+        font-weight: 500;
+        transition: color 0.2s;
+
+        &:hover {
+          color: #007bff;
+        }
+      }
+    }
+  }
+  
+  .auth {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .userName {
+      color: #666;
+      font-weight: 500;
+    }
+
+    .logoutBtn {
+      padding: 0.5rem 1rem;
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: #c82333;
+      }
+    }
+  }
