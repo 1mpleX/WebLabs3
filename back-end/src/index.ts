@@ -68,17 +68,28 @@ const start = async () => {
     // Создаем тестового пользователя
     try {
       const testUser = await User.create({
-        name: 'Test User',
+        firstName: 'Test',
+        lastName: 'User',
         email: 'test@example.com',
         password: 'password123',
+        gender: 'male',
+        birthDate: new Date('1990-01-01')
       });
       console.log('Тестовый пользователь создан:', (testUser as any).email);
     } catch (userError) {
       console.error('Ошибка при создании тестового пользователя:', userError);
     }
 
+    // Синхронизация с базой данных
+    await sequelize.sync({ force: true }).then(() => {
+      console.log('Database synchronized');
+    }).catch((error) => {
+      console.error('Error synchronizing database:', error);
+    });
+
+    // Запуск сервера
     app.listen(PORT, () => {
-      console.log(`Сервер запущен на порту ${PORT}`);
+      console.log(`Server is running on port ${PORT}`);
     });
   } catch (error) {
     console.error('Ошибка подключения к базе данных:', error);

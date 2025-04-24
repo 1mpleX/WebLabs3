@@ -19,13 +19,19 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             required:
- *               - name
+ *               - firstName
+ *               - lastName
  *               - email
  *               - password
+ *               - gender
+ *               - birthDate
  *             properties:
- *               name:
+ *               firstName:
  *                 type: string
  *                 description: Имя пользователя
+ *               lastName:
+ *                 type: string
+ *                 description: Фамилия пользователя
  *               email:
  *                 type: string
  *                 format: email
@@ -34,6 +40,13 @@ const router = express.Router();
  *                 type: string
  *                 format: password
  *                 description: Пароль пользователя
+ *               gender:
+ *                 type: string
+ *                 description: Пол пользователя
+ *               birthDate:
+ *                 type: string
+ *                 format: date
+ *                 description: Дата рождения пользователя
  *     responses:
  *       201:
  *         description: Пользователь успешно зарегистрирован
@@ -63,44 +76,105 @@ const router = express.Router();
 
 router.post('/register', async (req, res): Promise<any> => {
   try {
-    const { name, email, password } = req.body;
+    const { firstName, lastName, email, password, gender, birthDate } = req.body;
+    
+    console.log('Registration attempt with data:', {
+      firstName,
+      lastName,
+      email,
+      gender,
+      birthDate
+    });
 
     // Проверяем наличие всех необходимых полей
-    if (!name || !email || !password) {
+    if (!firstName || !lastName || !email || !password || !gender || !birthDate) {
+      console.log('Missing required fields:', {
+        firstName: !firstName,
+        lastName: !lastName,
+        email: !email,
+        password: !password,
+        gender: !gender,
+        birthDate: !birthDate
+      });
       return res.status(400).json({
-        message: 'Все поля (name, email, password) обязательны для заполнения',
+        message: 'Все поля обязательны для заполнения',
+        missingFields: {
+          firstName: !firstName,
+          lastName: !lastName,
+          email: !email,
+          password: !password,
+          gender: !gender,
+          birthDate: !birthDate
+        }
       });
     }
 
     // Проверяем существующего пользователя
     const existing = await User.findOne({ where: { email } });
     if (existing) {
+      console.log('User already exists with email:', email);
       return res.status(409).json({
         message: 'Пользователь с таким email уже существует',
+        email
       });
     }
 
     // Создаем нового пользователя
     const user: any = await User.create({
-      name,
+      firstName,
+      lastName,
       email,
       password,
+      gender,
+      birthDate,
+    });
+
+    // Создаем токены
+    const accessToken = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET || 'your_jwt_secret',
+      { expiresIn: '15m' }
+    );
+
+    const refreshToken = jwt.sign(
+      { id: user.id },
+      process.env.REFRESH_TOKEN_SECRET || 'your_refresh_token_secret',
+      { expiresIn: '7d' }
+    );
+
+    // Сохраняем refresh token в базе
+    await RefreshToken.create({
+      token: refreshToken,
+      userId: user.id,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 дней
     });
 
     // Возвращаем ответ без пароля
     const userWithoutPassword = {
       id: user.id,
-      name: user.name,
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
+      gender: user.gender,
+      birthDate: user.birthDate,
     };
 
     res.status(201).json({
       message: 'Пользователь успешно зарегистрирован',
       user: userWithoutPassword,
+      accessToken,
+      refreshToken,
     });
-  } catch {
-    console.error('Ошибка при регистрации');
-    res.status(500).json({ message: 'Ошибка при регистрации пользователя' });
+  } catch (error) {
+    console.error('Detailed registration error:', {
+      error: error instanceof Error ? error.message : error,
+      stack: error instanceof Error ? error.stack : undefined,
+      body: req.body
+    });
+    res.status(500).json({ 
+      message: 'Ошибка при регистрации пользователя',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 });
 

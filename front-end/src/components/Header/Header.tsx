@@ -1,35 +1,54 @@
-import { Link } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '../../store';
+import { clearUser } from '../../store/slices/userSlice';
 import styles from './Header.module.scss';
 
-const Header = () => {
-  const { isAuthenticated, user, logout } = useAuth();
+const Header: React.FC = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { currentUser } = useSelector((state: RootState) => state.user);
+
+  const handleLogout = () => {
+    dispatch(clearUser());
+    navigate('/login');
+  };
 
   return (
     <header className={styles.header}>
-      <Link to="/" className={styles.logo}>
-        EventManager
-      </Link>
+      <div className={styles.logo}>
+        <Link to="/">Event Manager</Link>
+      </div>
       <nav className={styles.nav}>
-        {isAuthenticated ? (
+        {currentUser ? (
           <>
-            <span className={styles.username}>{user?.name}</span>
-            <Link to="/events" className={styles.link}>
-              Мероприятия
-            </Link>
-            <button onClick={logout} className={styles.button}>
-              Выйти
-            </button>
+            <ul className={styles.navLinks}>
+              <li>
+                <Link to="/profile">Профиль</Link>
+              </li>
+              <li>
+                <Link to="/events">Мероприятия</Link>
+              </li>
+            </ul>
+            <div className={styles.auth}>
+              <span className={styles.userName}>
+                {currentUser.firstName} {currentUser.lastName}
+              </span>
+              <button onClick={handleLogout} className={styles.logoutBtn}>
+                Выйти
+              </button>
+            </div>
           </>
         ) : (
-          <>
-            <Link to="/login" className={styles.link}>
-              Войти
-            </Link>
-            <Link to="/register" className={styles.link}>
-              Регистрация
-            </Link>
-          </>
+          <ul className={styles.navLinks}>
+            <li>
+              <Link to="/login">Войти</Link>
+            </li>
+            <li>
+              <Link to="/register">Регистрация</Link>
+            </li>
+          </ul>
         )}
       </nav>
     </header>

@@ -12,9 +12,15 @@ export const User = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
-    name: {
+    firstName: {
       type: DataTypes.STRING,
       allowNull: false,
+      field: 'first_name'
+    },
+    lastName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      field: 'last_name'
     },
     email: {
       type: DataTypes.STRING,
@@ -28,13 +34,26 @@ export const User = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    gender: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    birthDate: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      field: 'birth_date'
+    },
     createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
     },
+    updatedAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    }
   },
   {
-    tableName: 'Users',
+    tableName: 'users',
     timestamps: true,
     hooks: {
       beforeCreate: async (user) => {
@@ -58,8 +77,8 @@ Event.belongsTo(User, {
 
 export default User;
 
-(User.prototype as any).comparePassword = async (password: string): Promise<boolean> => {
-  return bcrypt.compare(password, (this as any).password);
+(User.prototype as any).comparePassword = async function(password: string): Promise<boolean> {
+  return await bcrypt.compare(password, (this as any).password);
 };
 
 (User.prototype as any).generateToken = function (): string {

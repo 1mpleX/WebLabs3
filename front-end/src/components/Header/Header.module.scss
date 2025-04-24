@@ -1,50 +1,73 @@
 .header {
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 1rem 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 2rem;
-    background-color: #ffffff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
   
   .logo {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #333;
-    text-decoration: none;
+    a {
+      text-decoration: none;
+      color: #007bff;
+      font-size: 1.5rem;
+      font-weight: bold;
+      
+      &:hover {
+        color: #0056b3;
+      }
+    }
   }
   
   .nav {
     display: flex;
-    gap: 1rem;
     align-items: center;
+    gap: 2rem;
   }
   
-  .link {
-    color: #333;
-    text-decoration: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-  
-    &:hover {
-      background-color: #f5f5f5;
+  .navLinks {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 2rem;
+
+    li {
+      a {
+        text-decoration: none;
+        color: #333;
+        font-weight: 500;
+        transition: color 0.2s;
+
+        &:hover {
+          color: #007bff;
+        }
+      }
     }
   }
   
-  .button {
-    background-color: #ff4444;
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-  
-    &:hover {
-      background-color: #ff0000;
+  .auth {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .userName {
+      color: #666;
+      font-weight: 500;
     }
-  }
-  
-  .username {
-    color: #666;
-    margin-right: 1rem;
+
+    .logoutBtn {
+      padding: 0.5rem 1rem;
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: #c82333;
+      }
+    }
   }
